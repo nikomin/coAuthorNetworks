@@ -8,6 +8,7 @@ with open(filename) as bibtex_file:
     bib_database = bibtexparser.load(bibtex_file,parser = bibtexparser.bparser.BibTexParser(common_strings=True))
 
 network=dict()
+ignoredEntriesCount = 0
 for e in bib_database.entries:
     try:
         list_authors=e["author"].split(" and ")
@@ -30,9 +31,13 @@ for e in bib_database.entries:
                     network[author_b_id][author_a_id] = network[author_b_id][author_a_id] + 1
     except KeyError as e:
         # entry without 'author' are ignored
-        print('KeyError %s, entry ignored.' %str(e))
+        print('EE: KeyError %s, entry ignored.' %str(e))
+        ignoredEntriesCount += 1
         pass
+
     
+
+print( "Total entries: %i , ignored entries: %i"  %( len(bib_database.entries),ignoredEntriesCount ) )
 print("source,target,weight")
 for l in network.keys():
     for u in network[l].keys():
