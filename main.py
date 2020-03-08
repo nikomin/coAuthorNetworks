@@ -2,7 +2,9 @@ import bibtexparser
 from bibtexparser.customization import *
 from bibtexparser.latexenc import latex_to_unicode
 
-with open('phd.bib') as bibtex_file:
+filename = 'phd.bib'
+
+with open(filename) as bibtex_file:
     bib_database = bibtexparser.load(bibtex_file,parser = bibtexparser.bparser.BibTexParser(common_strings=True))
 
 network=dict()
