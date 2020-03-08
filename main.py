@@ -7,28 +7,37 @@ filename = 'phd.bib'
 with open(filename) as bibtex_file:
     bib_database = bibtexparser.load(bibtex_file,parser = bibtexparser.bparser.BibTexParser(common_strings=True))
 
-network=dict()
+
+
+def genAuthorID(authorName):
+    """ Return a unique ID given an authorName. """
+    fullName = splitname(latex_to_unicode(authorName))
+    return fullName["last"][0]+fullName["first"][0]
+    
+authorList=dict()
+authorNetwork=dict()
 ignoredEntriesCount = 0
 for e in bib_database.entries:
     try:
         list_authors=e["author"].split(" and ")
         for a in  range(len(list_authors)):
+            author_a_id=genAuthorID(list_authors[a])
+            if not( author_a_id in authorList.keys() ):
+                authorList[ author_a_id ] =  {'papercount': 0}
+            authorList[ author_a_id ]['papercount'] += 1
             for b in  range(a+1,len(list_authors)):
-                auth_a=splitname(latex_to_unicode(list_authors[a]))
-                auth_b=splitname(latex_to_unicode(list_authors[b]))
-                author_a_id=(auth_a["last"][0]+auth_a["first"][0])
-                author_b_id=(auth_b["last"][0]+auth_b["first"][0])
+                author_b_id=genAuthorID(list_authors[b])
                 if(author_a_id != author_b_id):
-                    if(not(author_a_id in network.keys())):
-                        network[author_a_id] = dict()
-                    if(not(author_b_id in network[author_a_id])):
-                        network[author_a_id][author_b_id]= 0
-                    if(not(author_b_id in network.keys())):
-                        network[author_b_id] = dict()
-                    if(not(author_a_id in network[author_b_id])):
-                        network[author_b_id][author_a_id]= 0
-                    network[author_a_id][author_b_id] = network[author_a_id][author_b_id] + 1
-                    network[author_b_id][author_a_id] = network[author_b_id][author_a_id] + 1
+                    if(not(author_a_id in authorNetwork.keys())):
+                        authorNetwork[author_a_id] = dict()
+                    if(not(author_b_id in authorNetwork[author_a_id])):
+                        authorNetwork[author_a_id][author_b_id]= 0
+                    if(not(author_b_id in authorNetwork.keys())):
+                        authorNetwork[author_b_id] = dict()
+                    if(not(author_a_id in authorNetwork[author_b_id])):
+                        authorNetwork[author_b_id][author_a_id]= 0
+                    authorNetwork[author_a_id][author_b_id] = authorNetwork[author_a_id][author_b_id] + 1
+                    authorNetwork[author_b_id][author_a_id] = authorNetwork[author_b_id][author_a_id] + 1
     except KeyError as e:
         # entry without 'author' are ignored
         print('EE: KeyError %s, entry ignored.' %str(e))
@@ -37,8 +46,15 @@ for e in bib_database.entries:
 
     
 
-print( "Total entries: %i , ignored entries: %i"  %( len(bib_database.entries),ignoredEntriesCount ) )
-print("source,target,weight")
-for l in network.keys():
-    for u in network[l].keys():
-        print(l+","+u+","+str(network[l][u]))
+print( "# entries: %i , # ignored entries: %i"  %( len(bib_database.entries),ignoredEntriesCount ) )
+print( "# authors: %i" %len(authorNetwork.keys()) )
+
+print( "author, papercount" )
+for authorID in authorList.keys():
+    print( "%s,%i" %(authorID, authorList[authorID]["papercount"]) )
+
+print( "source,target,weight" )
+
+for author in authorNetwork.keys():
+    for coAuthor in authorNetwork[author].keys():
+        print(author+","+coAuthor+","+str(authorNetwork[author][coAuthor]))
