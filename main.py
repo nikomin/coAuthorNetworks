@@ -28,22 +28,18 @@ for e in bib_database.entries:
             authorIDs.append( genAuthorID(authorName) )
 
         for i, author_a_id in enumerate(authorIDs):
-#        for a in  range(len(list_authors)):
-#            author_a_id = genAuthorID(list_authors[a])
             if not( author_a_id in authorList.keys() ):
                 authorList[ author_a_id ] = {'papercount': 0}
             authorList[ author_a_id ]['papercount'] += 1
             for j, author_b_id in  enumerate(authorIDs[i+1:]):
-#            for b in  range(a+1,len(list_authors)):
-#                author_b_id = genAuthorID(list_authors[b])
-                if(author_a_id != author_b_id):
-                    if(not(author_a_id in authorNetwork.keys())):
+                if author_a_id != author_b_id:
+                    if not( author_a_id in authorNetwork.keys() ):
                         authorNetwork[author_a_id] = dict()
-                    if(not(author_b_id in authorNetwork[author_a_id])):
+                    if not( author_b_id in authorNetwork[author_a_id] ):
                         authorNetwork[author_a_id][author_b_id] = 0
-                    if(not(author_b_id in authorNetwork.keys())):
+                    if not( author_b_id in authorNetwork.keys() ):
                         authorNetwork[author_b_id] = dict()
-                    if(not(author_a_id in authorNetwork[author_b_id])):
+                    if not( author_a_id in authorNetwork[author_b_id] ):
                         authorNetwork[author_b_id][author_a_id] = 0
                     authorNetwork[author_a_id][author_b_id] += 1
                     authorNetwork[author_b_id][author_a_id] += 1
