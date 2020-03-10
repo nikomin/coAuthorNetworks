@@ -23,6 +23,6 @@ which can be installed with
 ## Usage
 
 ```bash
-python3 main.py >  edgelistNames.csv
+./main.py >  edgelistNames.csv
 ```
 
