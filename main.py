@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """
 Analysis of co-authorships between publications taken from a bibtex file.
 """
@@ -46,37 +48,32 @@ def printResults( authorNetwork, authorList ):
 
 
 
-# read file
-filename = 'phd.bib'
-with open(filename) as bibtex_file:
-    bib_database = bibtexparser.load(bibtex_file,parser = bibtexparser.bparser.BibTexParser(common_strings=True))
+if __name__ == '__main__':
+    # read file
+    filename = 'phd.bib'
+    with open(filename) as bibtex_file:
+        bib_database = bibtexparser.load(bibtex_file,parser = bibtexparser.bparser.BibTexParser(common_strings=True))
 
+    # parse entries
+    authorList = dict() # for number of papers for each author
+    authorNetwork = dict() # for number of links between pairs of authors
+    ignoredEntriesCount = 0 # entries in bib_database that did not have "author"-field
+    for e in bib_database.entries:
+        try:
+            list_authors=e["author"].split(" and ")
+            authorIDs = genAuthorIDs( list_authors )
+            for i, author_a_id in enumerate( authorIDs ):
+                if not( author_a_id in authorList.keys() ):
+                    authorList[ author_a_id ] = {'papercount': 0}
+                authorList[ author_a_id ]['papercount'] += 1
+                for author_b_id in authorIDs[i+1:]:
+                    addCoauthorEdge( authorNetwork, author_a_id, author_b_id)
+        except KeyError as e:
+            # entries without 'author' are ignored
+            ignoredEntriesCount += 1
+            pass
 
-
-authorList = dict() # for number of papers for each author
-authorNetwork = dict() # for number of links between pairs of authors
-ignoredEntriesCount = 0 # entries in bib_database that did not have "author"-field
-
-# parse entries
-for e in bib_database.entries:
-    try:
-        list_authors=e["author"].split(" and ")
-        authorIDs = genAuthorIDs( list_authors )
-
-        for i, author_a_id in enumerate( authorIDs ):
-            if not( author_a_id in authorList.keys() ):
-                authorList[ author_a_id ] = {'papercount': 0}
-            authorList[ author_a_id ]['papercount'] += 1
-            for author_b_id in authorIDs[i+1:]:
-                addCoauthorEdge( authorNetwork, author_a_id, author_b_id)
-                
-    except KeyError as e:
-        # entries without 'author' are ignored
-        ignoredEntriesCount += 1
-        pass
-
-# print results
-print( "# total entries: %i\n# ignored entries: %i"  %( len(bib_database.entries),ignoredEntriesCount ) )
-print( "# authors: %i" %len(authorNetwork.keys()) )
-
-printResults( authorNetwork, authorList )
+    # print results
+    print( "# total entries: %i\n# ignored entries: %i"  %( len(bib_database.entries),ignoredEntriesCount ) )
+    print( "# authors: %i" %len(authorNetwork.keys()) )
+    printResults( authorNetwork, authorList )
