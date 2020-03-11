@@ -68,9 +68,12 @@ def main( bib_database ):
     authorList = dict() # for number of papers for each author
     authorNetwork = dict() # for number of links between pairs of authors
     ignoredEntriesCount = 0 # entries in bib_database that did not have "author"-field
+    paperList = dict()
     for e in bib_database.entries:
+        # find authors and counts of papers and of co-authorships
         try:
             authorIDs = genAuthorIDs( e["author"].split(" and ") )
+            paperList[e['ID']] = { 'authorIDs' : authorIDs, 'year' : e['year'] }
             for i, author_a_id in enumerate( authorIDs ):
                 if not( author_a_id in authorList.keys() ):
                     authorList[ author_a_id ] = {'papercount': 0}
@@ -81,7 +84,39 @@ def main( bib_database ):
             # entries without 'author' are ignored
             ignoredEntriesCount += 1
             pass
-    
+
+
+    # pairs of papers
+    paperNetwork = dict()
+    for i, paper_i in enumerate( list(paperList.keys()) ):
+        paperNetwork[paper_i] = { paper_i : len(paperList[paper_i]["authorIDs"]) }
+        for paper_j in list(paperList.keys())[i+1:]:
+            
+            for author_i in paperList[paper_i]["authorIDs"]:
+                try:
+                    tmp = paperList[paper_j]["authorIDs"].index( author_i )
+                    # entry found, we have one connection
+                    if not( paper_i in paperNetwork.keys() ):
+                        paperNetwork[paper_i] = dict()
+                    if not( paper_j in paperNetwork[paper_i] ):
+                        paperNetwork[paper_i][paper_j] = 0
+                    if not( paper_j in paperNetwork.keys() ):
+                        paperNetwork[paper_j] = dict()
+                    if not( paper_i in paperNetwork[paper_j] ):
+                        paperNetwork[paper_j][paper_i] = 0
+                    paperNetwork[paper_i][paper_j] += 1
+                    paperNetwork[paper_j][paper_i] += 1
+
+                except ValueError:
+                    # papers don't share author
+                    pass
+                
+            
+    for paper in paperNetwork.keys():
+        for coPaper in paperNetwork[paper].keys():
+            print(paper+","+coPaper+","+str(paperNetwork[paper][coPaper]))
+
+            
     # print results
     print( "# total entries: %i\n# ignored entries: %i"  %( len(bib_database.entries),ignoredEntriesCount ) )
     print( "# authors: %i" %len(authorNetwork.keys()) )
