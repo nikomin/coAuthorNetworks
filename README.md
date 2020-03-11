@@ -29,3 +29,13 @@ which can be installed typing:
 ./main.py BIBTEXFILENAME
 ```
 
+It will read the bibtex-file and write the results in a bunch of new
+files.
+
+
+## Warranty
+
+There is none. The software might or might not work for you or even
+have unexpected effects like data loss or much worse. I don't know,
+but did used it and would say it's rather safe to run. Always have a
+backup!
