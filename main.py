@@ -7,6 +7,11 @@ from bibtexparser.customization import splitname
 from bibtexparser.latexenc import latex_to_unicode
 from sys import argv
 
+extensionDefault_authorlist = ".authorlist.csv"
+extensionDefault_authorNetwork = ".authorNetwork.csv"
+
+
+
 def genAuthorIDs(authorNames):
     """ Return a unique ID for each name in given list. """
     authorIDs = []
@@ -36,17 +41,26 @@ def addCoauthorEdge( authorNetwork, author_a_id, author_b_id):
         authorNetwork[author_b_id][author_a_id] += 1
     return
 
-def printResults( authorNetwork, authorList ):
+def printResults( filenameBase, authorNetwork, authorList ):
     """ Print authorList and -network. """
-    print( "======================================================================")
-    print( "author, papercount" )
+
+    print( "saving authorlist")
+    outfilename = filenameBase + extensionDefault_authorlist
+    f = open( outfilename, "w")
+    f.write( "author, papercount\n" )
     for authorID in authorList.keys():
-        print( "%s,%i" %(authorID, authorList[authorID]["papercount"]) )
-    print( "======================================================================")
-    print( "source,target,weight" )
+        f.write( "%s,%i\n" %(authorID, authorList[authorID]["papercount"]) )
+    f.close()
+    
+    print( "saving authornetwork")
+    outfilename = filenameBase + extensionDefault_authorNetwork
+    f = open( outfilename, "w")
+    f.write( "source,target,weight\n" )
     for author in authorNetwork.keys():
         for coAuthor in authorNetwork[author].keys():
-            print(author+","+coAuthor+","+str(authorNetwork[author][coAuthor]))
+            f.write(author+","+coAuthor+","+str(authorNetwork[author][coAuthor])+'\n')
+    f.close()
+    print( "Done." )
     return
 
 def main( bib_database ):
@@ -71,7 +85,7 @@ def main( bib_database ):
     # print results
     print( "# total entries: %i\n# ignored entries: %i"  %( len(bib_database.entries),ignoredEntriesCount ) )
     print( "# authors: %i" %len(authorNetwork.keys()) )
-    printResults( authorNetwork, authorList )
+    printResults( 'TBD',authorNetwork, authorList )
     return
 
 
