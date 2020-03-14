@@ -99,7 +99,7 @@ def printResults( filenameBase, authorNetwork, authorList, paperNetwork, paperLi
     
     return
 
-def main( bib_database ):
+def analysis( bib_database ):
     # parse entries
     authorList = dict() # for number of papers for each author
     authorNetwork = dict() # for number of links between pairs of authors
@@ -151,13 +151,13 @@ if __name__ == '__main__':
             with open(filename) as bibtex_file:
                 bib_database = bibtexparser.load(bibtex_file,parser = bibtexparser.bparser.BibTexParser(common_strings=True))
 
-                authorNetwork, authorList,  paperNetwork, paperList, ignoredEntriesCount = main( bib_database )
+            authorNetwork, authorList,  paperNetwork, paperList, ignoredEntriesCount = analysis( bib_database )
 
-                # print results
-                print( "# total entries: %i\n# ignored entries: %i"  %( len(bib_database.entries),
-                                                                        ignoredEntriesCount ) )
-                print( "# authors: %i" %len(authorNetwork.keys()) )
-                printResults( path.split(filename)[1] ,authorNetwork, authorList, paperNetwork, paperList )
+            # print results
+            print( "# total entries: %i\n# ignored entries: %i"  %( len(bib_database.entries),
+                                                                    ignoredEntriesCount ) )
+            print( "# authors: %i" %len(authorNetwork.keys()) )
+            printResults( path.split(filename)[1] ,authorNetwork, authorList, paperNetwork, paperList )
 
         except FileNotFoundError:
             print("File `%s` not found. Aborting." %filename)
