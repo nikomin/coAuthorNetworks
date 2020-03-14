@@ -6,6 +6,7 @@ import bibtexparser
 from bibtexparser.customization import splitname
 from bibtexparser.latexenc import latex_to_unicode
 from sys import argv
+from os import path
 
 extensionDefault_authorlist = ".authorlist.csv"
 extensionDefault_authorNetwork = ".authorNetwork.csv"
@@ -156,7 +157,7 @@ if __name__ == '__main__':
                 print( "# total entries: %i\n# ignored entries: %i"  %( len(bib_database.entries),
                                                                         ignoredEntriesCount ) )
                 print( "# authors: %i" %len(authorNetwork.keys()) )
-                printResults( 'TBD',authorNetwork, authorList, paperNetwork, paperList )
+                printResults( path.split(filename)[1] ,authorNetwork, authorList, paperNetwork, paperList )
 
         except FileNotFoundError:
             print("File `%s` not found. Aborting." %filename)
