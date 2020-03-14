@@ -9,6 +9,8 @@ from sys import argv
 
 extensionDefault_authorlist = ".authorlist.csv"
 extensionDefault_authorNetwork = ".authorNetwork.csv"
+extensionDefault_paperlist = ".paperlist.csv"
+extensionDefault_paperNetwork = ".paperNetwork.csv"
 
 
 
@@ -41,26 +43,59 @@ def addCoauthorEdge( authorNetwork, author_a_id, author_b_id):
         authorNetwork[author_b_id][author_a_id] += 1
     return
 
-def printResults( filenameBase, authorNetwork, authorList ):
+def addCoPaperEdge( paperNetwork, paper_i, paper_j ):
+    """ Adds an edge between to papers that share an author. """
+    if not( paper_i in paperNetwork.keys() ):
+        paperNetwork[paper_i] = dict()
+    if not( paper_j in paperNetwork[paper_i] ):
+        paperNetwork[paper_i][paper_j] = 0
+    if not( paper_j in paperNetwork.keys() ):
+        paperNetwork[paper_j] = dict()
+    if not( paper_i in paperNetwork[paper_j] ):
+        paperNetwork[paper_j][paper_i] = 0
+    paperNetwork[paper_i][paper_j] += 1
+    paperNetwork[paper_j][paper_i] += 1
+    return
+
+def printResults( filenameBase, authorNetwork, authorList, paperNetwork, paperList ):
     """ Print authorList and -network. """
 
-    print( "saving authorlist")
     outfilename = filenameBase + extensionDefault_authorlist
+    print( "saving authorlist to %s" %outfilename)
     f = open( outfilename, "w")
     f.write( "author, papercount\n" )
     for authorID in authorList.keys():
         f.write( "%s,%i\n" %(authorID, authorList[authorID]["papercount"]) )
     f.close()
     
-    print( "saving authornetwork")
     outfilename = filenameBase + extensionDefault_authorNetwork
+    print( "saving authornetwork to %s" %outfilename)
     f = open( outfilename, "w")
     f.write( "source,target,weight\n" )
     for author in authorNetwork.keys():
         for coAuthor in authorNetwork[author].keys():
             f.write(author+","+coAuthor+","+str(authorNetwork[author][coAuthor])+'\n')
     f.close()
+
+    outfilename = filenameBase + extensionDefault_paperNetwork
+    print( "saving papernetwork to %s" %outfilename)
+    f = open( outfilename, "w")
+    f.write( "source,target,weight\n" )
+    for paper in paperNetwork.keys():
+        for coPaper in paperNetwork[paper].keys():
+            f.write(paper+","+coPaper+","+str(paperNetwork[paper][coPaper])+'\n')
+    f.close()
+
+    outfilename = filenameBase + extensionDefault_paperlist
+    print( "saving paperlist to %s" %outfilename)
+    f = open( outfilename, "w")
+    f.write( "paper,authorcount,year\n" )
+    for paperID in paperList.keys():
+        f.write( "%s,%i,%s\n" %(paperID, len(paperList[paperID]['authorIDs']), paperList[paperID]['year'] ) )
+    f.close()
+
     print( "Done." )
+    
     return
 
 def main( bib_database ):
@@ -96,31 +131,15 @@ def main( bib_database ):
                 try:
                     tmp = paperList[paper_j]["authorIDs"].index( author_i )
                     # entry found, we have one connection
-                    if not( paper_i in paperNetwork.keys() ):
-                        paperNetwork[paper_i] = dict()
-                    if not( paper_j in paperNetwork[paper_i] ):
-                        paperNetwork[paper_i][paper_j] = 0
-                    if not( paper_j in paperNetwork.keys() ):
-                        paperNetwork[paper_j] = dict()
-                    if not( paper_i in paperNetwork[paper_j] ):
-                        paperNetwork[paper_j][paper_i] = 0
-                    paperNetwork[paper_i][paper_j] += 1
-                    paperNetwork[paper_j][paper_i] += 1
-
+                    addCoPaperEdge( paperNetwork, paper_i, paper_j )
                 except ValueError:
                     # papers don't share author
                     pass
                 
-            
-    for paper in paperNetwork.keys():
-        for coPaper in paperNetwork[paper].keys():
-            print(paper+","+coPaper+","+str(paperNetwork[paper][coPaper]))
-
-            
     # print results
     print( "# total entries: %i\n# ignored entries: %i"  %( len(bib_database.entries),ignoredEntriesCount ) )
     print( "# authors: %i" %len(authorNetwork.keys()) )
-    printResults( 'TBD',authorNetwork, authorList )
+    printResults( 'TBD',authorNetwork, authorList, paperNetwork, paperList )
     return
 
 
