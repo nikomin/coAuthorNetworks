@@ -135,12 +135,8 @@ def main( bib_database ):
                 except ValueError:
                     # papers don't share author
                     pass
-                
-    # print results
-    print( "# total entries: %i\n# ignored entries: %i"  %( len(bib_database.entries),ignoredEntriesCount ) )
-    print( "# authors: %i" %len(authorNetwork.keys()) )
-    printResults( 'TBD',authorNetwork, authorList, paperNetwork, paperList )
-    return
+
+    return authorNetwork, authorList,  paperNetwork, paperList, ignoredEntriesCount
 
 
 if __name__ == '__main__':
@@ -153,6 +149,14 @@ if __name__ == '__main__':
         try:
             with open(filename) as bibtex_file:
                 bib_database = bibtexparser.load(bibtex_file,parser = bibtexparser.bparser.BibTexParser(common_strings=True))
-            main( bib_database )
+
+                authorNetwork, authorList,  paperNetwork, paperList, ignoredEntriesCount = main( bib_database )
+
+                # print results
+                print( "# total entries: %i\n# ignored entries: %i"  %( len(bib_database.entries),
+                                                                        ignoredEntriesCount ) )
+                print( "# authors: %i" %len(authorNetwork.keys()) )
+                printResults( 'TBD',authorNetwork, authorList, paperNetwork, paperList )
+
         except FileNotFoundError:
             print("File `%s` not found. Aborting." %filename)
