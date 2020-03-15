@@ -105,7 +105,7 @@ def printResults( filenameBase, authorNetwork, authorList, paperNetwork, paperLi
     
     return
 
-def analysis( bib_database ):
+def extractNetworks( bib_database ):
     # parse entries
     authorList = dict() # for number of papers for each author
     authorNetwork = dict() # for number of links between pairs of authors
@@ -153,7 +153,7 @@ if __name__ == '__main__':
         filename = argv[1]
         try:
             bib_database = readBibtexfile( filename )
-            authorNetwork, authorList,  paperNetwork, paperList, ignoredEntriesCount = analysis( bib_database )
+            authorNetwork, authorList,  paperNetwork, paperList, ignoredEntriesCount = extractNetworks( bib_database )
 
             # print results
             print( "# total entries: %i\n# ignored entries: %i"  %( len(bib_database.entries),
