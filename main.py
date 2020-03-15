@@ -125,9 +125,7 @@ def analysis( bib_database ):
     # pairs of papers
     paperNetwork = dict()
     for i, paper_i in enumerate( list(paperList.keys()) ):
-        paperNetwork[paper_i] = { paper_i : len(paperList[paper_i]["authorIDs"]) }
         for paper_j in list(paperList.keys())[i+1:]:
-            
             for author_i in paperList[paper_i]["authorIDs"]:
                 try:
                     tmp = paperList[paper_j]["authorIDs"].index( author_i )
