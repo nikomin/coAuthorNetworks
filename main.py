@@ -14,6 +14,12 @@ extensionDefault_paperlist = ".paperlist.csv"
 extensionDefault_paperNetwork = ".paperNetwork.csv"
 
 
+def readBibtexfile(filename):
+    """Return a bib_database from File"""
+    with open(filename) as bibtex_file:
+        bib_database = bibtexparser.load(bibtex_file,parser = bibtexparser.bparser.BibTexParser(common_strings=True))
+    return bib_database
+
 
 def genAuthorIDs(authorNames):
     """ Return a unique ID for each name in given list. """
@@ -146,9 +152,7 @@ if __name__ == '__main__':
         # read file
         filename = argv[1]
         try:
-            with open(filename) as bibtex_file:
-                bib_database = bibtexparser.load(bibtex_file,parser = bibtexparser.bparser.BibTexParser(common_strings=True))
-
+            bib_database = readBibtexfile( filename )
             authorNetwork, authorList,  paperNetwork, paperList, ignoredEntriesCount = analysis( bib_database )
 
             # print results
