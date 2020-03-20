@@ -1,8 +1,14 @@
-script to generate co-author networkship from bibtex file using python 
+Script to generate co-author networkship from bibtex file using python (so far doesn't work with python3).
 
-
-usage:
+The script uses [bibtexparser](https://github.com/sciunto-org/python-bibtexparser)
+Quick install with pip:
 ```bash
-python3 main.py >  edgelistNames.csv
+pip2 install bibtexparser #or use --user if you don't have the root writing right
+```
+
+
+To use the script:
+```bash
+python2 main.py >  edgelistNames.csv
 ```
 
