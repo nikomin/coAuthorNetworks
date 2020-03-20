@@ -87,10 +87,12 @@ def printResults( filenameBase, authorNetwork, authorList, paperNetwork, paperLi
     outfilename = filenameBase + extensionDefault_paperNetwork
     print( "saving papernetwork to %s" %outfilename)
     f = open( outfilename, "w")
-    f.write( "source,target,weight\n" )
+    f.write( "source,target,weight,relativeWeight\n" )
     for paper in paperNetwork.keys():
         for coPaper in paperNetwork[paper].keys():
-            f.write(paper+","+coPaper+","+str(paperNetwork[paper][coPaper])+'\n')
+            absoluteWeight = paperNetwork[paper][coPaper]
+            relativeWeight = absoluteWeight/len(paperList[paper]['authorIDs'])
+            f.write(paper+","+coPaper+","+str(absoluteWeight)+","+str(relativeWeight)+'\n')
     f.close()
 
     outfilename = filenameBase + extensionDefault_paperlist
