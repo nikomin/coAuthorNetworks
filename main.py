@@ -29,4 +29,4 @@ for e in bib_database.entries:
 print("source,target,weight")
 for l in network.keys():
     for u in network[l].keys():
-        print(l+","+u+","+str(network[l][u]))
+        print(u','.join((unicode(l),unicode(u),unicode(network[l][u]))).encode('utf-8').strip())
