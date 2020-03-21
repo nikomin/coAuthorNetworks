@@ -20,7 +20,7 @@ The software is developed, used and tested with `python3` and
 [`bibtexparser`](https://github.com/sciunto-org/python-bibtexparser)
 version `1.1.0`. The latter can be installed by typing:
 
-    pip install bibtexparser
+    pip3 install bibtexparser
 
 
 ## Usage
