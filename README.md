@@ -12,7 +12,7 @@ output, i.e. more precise. It is not intended for scientific
 analysis of text corpora.
 
 It's a fork from  Simon Carrignon's original lines of code that can be
-found [here](https://framagit.org/sc/pybibnet).
+found [here](https://framagit.org/sc/pybibnet). Simon is also [on Github](https://github.com/simoncarrignon).
 
 ## Prerequisites
 
@@ -29,12 +29,24 @@ which can be installed typing:
 ./main.py BIBTEXFILENAME
 ```
 
-It will read the bibtex-file and write the results in a bunch of new
-files.
+It expects a bibtex-file at `FILENAME`. The output consists of four
+files:
 
-An example from my own PhD thesis is available in `example/`
+  * `FILENAME.authorlist.csv`
+  * `FILENAME.authorNetwork.csv` - network of authors who share a publication
+  * `FILENAME.paperlist.csv`
+  * `FILENAME.paperNetwork.csv` - network of publications which share an author
 
-![](example/phdNET.png)
+Visualization of the networks is not (yet)
+implemented. [Gephi](https://gephi.org/) does a pretty good job doing
+that.
+
+
+A bibtex example is available in `example/`. The two graphs were done with [Gephi](https://gephi.org/).
+
+![Co-author network of phd.bib](example/phdAuthorNET.png)
+![Co-paper network of phd.bib](example/phdPaperNET.png)
+
 
 ## Warranty
 
@@ -43,3 +55,13 @@ have unexpected effects like data loss or much worse. I don't know,
 but did used it and would say it's rather safe to run. Always have a
 backup!
 
+## Authors
+
+  * Niko Komin ([on Laikaundfreunde](http://www.laikaundfreunde.de/niko-komin))
+  * Simon Carrignon ([on Framagit](https://framagit.org/sc), [on Github](https://github.com/simoncarrignon), [on Twitter](https://twitter.com/SimonCarrignon/).
+
+
+## License
+
+
+<a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
