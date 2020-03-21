@@ -1,27 +1,27 @@
 # Co-authorship analysis tool
 
-This software is made to help analyse the literature of research
-projects. Which papers share authors, which authors publish together?
-Wjat are the timelines? etc.
-
+This software is made to help analyse the connections between
+publications. Which papers share authors, which authors publish
+together?  What are the timelines? etc.
 
 Robustness goes over precision. The analysis should work with any
-given bibtex-file that has minimal information.  The cleaner
-the bibtex-file (duplicates, name spellings, ...) the better the
-output, i.e. more precise. It is not intended for scientific
-analysis of text corpora.
+given bibtex-file that has minimal information.  The cleaner the
+bibtex-file (duplicates, name spellings, ...) the better the output,
+i.e. more precise. This software is not intended for scientific
+analysis of text corpora but for understanding connections in selected
+publication lists.
 
 It's a fork from  Simon Carrignon's original lines of code that can be
 found [here](https://framagit.org/sc/pybibnet). Simon is also [on Github](https://github.com/simoncarrignon).
 
 ## Prerequisites
 
-The software is developed and used with `python3`. It makes use of the
-package
-[`bibtexparser`](https://github.com/sciunto-org/python-bibtexparser),
-which can be installed typing:
+The software is developed, used and tested with `python3` and 
+[`bibtexparser`](https://github.com/sciunto-org/python-bibtexparser)
+version `1.1.0`. The latter can be installed by typing:
 
     pip install bibtexparser
+
 
 ## Usage
 
@@ -42,7 +42,7 @@ implemented. [Gephi](https://gephi.org/) does a pretty good job doing
 that.
 
 
-A bibtex example is available in `example/`. The two graphs were done with [Gephi](https://gephi.org/).
+A bibtex example is available in `example/`. The two following graphs were done with [Gephi](https://gephi.org/).
 
 ![Co-author network of phd.bib](example/phdAuthorNET.png)
 ![Co-paper network of phd.bib](example/phdPaperNET.png)
@@ -52,13 +52,13 @@ A bibtex example is available in `example/`. The two graphs were done with [Geph
 
 There is none. The software might or might not work for you or even
 have unexpected effects like data loss or much worse. I don't know,
-but did used it and would say it's rather safe to run. Always have a
-backup!
+but did use it and I would say it's rather safe to run. In any case:
+always have a backup of your stuff!
 
 ## Authors
 
   * Niko Komin ([on Laikaundfreunde](http://www.laikaundfreunde.de/niko-komin))
-  * Simon Carrignon ([on Framagit](https://framagit.org/sc), [on Github](https://github.com/simoncarrignon), [on Twitter](https://twitter.com/SimonCarrignon/).
+  * Simon Carrignon ([on Framagit](https://framagit.org/sc), [on Github](https://github.com/simoncarrignon), [on Twitter](https://twitter.com/SimonCarrignon/)).
 
 
 ## License
