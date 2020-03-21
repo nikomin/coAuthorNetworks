@@ -1,36 +1,169 @@
+#!/usr/bin/env python3
+"""
+Analysis of co-authorships between publications taken from a bibtex file.
+"""
 import bibtexparser
-from bibtexparser.customization import *
+from bibtexparser.customization import splitname
 from bibtexparser.latexenc import latex_to_unicode
-import sys
 
-if __name__ == "__main__":
-    argv=sys.argv[1:]
-    inputfile=argv[0]
-    with open(inputfile) as bibtex_file:
+from sys import argv
+from os import path
+
+extensionDefault_authorlist = ".authorlist.csv"
+extensionDefault_authorNetwork = ".authorNetwork.csv"
+extensionDefault_paperlist = ".paperlist.csv"
+extensionDefault_paperNetwork = ".paperNetwork.csv"
+
+
+def readBibtexfile(filename):
+    """Return a bib_database from File"""
+    with open(filename) as bibtex_file:
         bib_database = bibtexparser.load(bibtex_file,parser = bibtexparser.bparser.BibTexParser(common_strings=True))
+    return bib_database
 
-    network=dict()
+
+def genAuthorIDs(authorNames):
+    """ Return a unique ID for each name in given list. """
+    authorIDs = []
+    for authorName in authorNames:
+        tmp = splitname( latex_to_unicode(authorName) )
+        tmpFirstname = ''
+        try:
+            tmpFirstname = tmp["first"][0]
+        except IndexError:
+            # leave empty, if no first name is give. it ncould still work
+            pass
+        authorIDs.append( tmp["last"][0]+tmpFirstname )
+    return authorIDs
+
+def addCoauthorEdge( authorNetwork, author_a_id, author_b_id):
+    """ Adds an edge between author_a and author_b to the authorNetwork."""
+    if author_a_id != author_b_id:
+        if not( author_a_id in authorNetwork.keys() ):
+            authorNetwork[author_a_id] = dict()
+        if not( author_b_id in authorNetwork[author_a_id] ):
+            authorNetwork[author_a_id][author_b_id] = 0
+        if not( author_b_id in authorNetwork.keys() ):
+            authorNetwork[author_b_id] = dict()
+        if not( author_a_id in authorNetwork[author_b_id] ):
+            authorNetwork[author_b_id][author_a_id] = 0
+        authorNetwork[author_a_id][author_b_id] += 1
+        authorNetwork[author_b_id][author_a_id] += 1
+    return
+
+def addCoPaperEdge( paperNetwork, paper_i, paper_j ):
+    """ Adds an edge between to papers that share an author. """
+    if not( paper_i in paperNetwork.keys() ):
+        paperNetwork[paper_i] = dict()
+    if not( paper_j in paperNetwork[paper_i] ):
+        paperNetwork[paper_i][paper_j] = 0
+    if not( paper_j in paperNetwork.keys() ):
+        paperNetwork[paper_j] = dict()
+    if not( paper_i in paperNetwork[paper_j] ):
+        paperNetwork[paper_j][paper_i] = 0
+    paperNetwork[paper_i][paper_j] += 1
+    paperNetwork[paper_j][paper_i] += 1
+    return
+
+def printResults( filenameBase, authorNetwork, authorList, paperNetwork, paperList ):
+    """ Print authorList and -network. """
+
+    outfilename = filenameBase + extensionDefault_authorlist
+    print( "saving authorlist to %s" %outfilename)
+    f = open( outfilename, "w")
+    f.write( "author, papercount\n" )
+    for authorID in authorList.keys():
+        f.write( "%s,%i\n" %(authorID, authorList[authorID]["papercount"]) )
+    f.close()
+    
+    outfilename = filenameBase + extensionDefault_authorNetwork
+    print( "saving authornetwork to %s" %outfilename)
+    f = open( outfilename, "w")
+    f.write( "source,target,weight\n" )
+    for author in authorNetwork.keys():
+        for coAuthor in authorNetwork[author].keys():
+            f.write(author+","+coAuthor+","+str(authorNetwork[author][coAuthor])+'\n')
+    f.close()
+
+    outfilename = filenameBase + extensionDefault_paperNetwork
+    print( "saving papernetwork to %s" %outfilename)
+    f = open( outfilename, "w")
+    f.write( "source,target,weight,relativeWeight\n" )
+    for paper in paperNetwork.keys():
+        for coPaper in paperNetwork[paper].keys():
+            absoluteWeight = paperNetwork[paper][coPaper]
+            relativeWeight = absoluteWeight/len(paperList[paper]['authorIDs'])
+            f.write(paper+","+coPaper+","+str(absoluteWeight)+","+str(relativeWeight)+'\n')
+    f.close()
+
+    outfilename = filenameBase + extensionDefault_paperlist
+    print( "saving paperlist to %s" %outfilename)
+    f = open( outfilename, "w")
+    f.write( "paper,authorcount,year\n" )
+    for paperID in paperList.keys():
+        f.write( "%s,%i,%s\n" %(paperID, len(paperList[paperID]['authorIDs']), paperList[paperID]['year'] ) )
+    f.close()
+
+    print( "Done." )
+    
+    return
+
+def extractNetworks( bib_database ):
+    # parse entries
+    authorList = dict() # for number of papers for each author
+    authorNetwork = dict() # for number of links between pairs of authors
+    ignoredEntriesCount = 0 # entries in bib_database that did not have "author"-field
+    paperList = dict()
     for e in bib_database.entries:
-        list_authors=e["author"].split(" and ")
-        for a in  range(len(list_authors)):
-            for b in  range(a+1,len(list_authors)):
-                auth_a=splitname(latex_to_unicode(list_authors[a]))
-                auth_b=splitname(latex_to_unicode(list_authors[b]))
-                author_a_id=(auth_a["last"][0]+auth_a["first"][0])
-                author_b_id=(auth_b["last"][0]+auth_b["first"][0])
-                if(author_a_id != author_b_id):
-                    if(not(author_a_id in network.keys())):
-                        network[author_a_id] = dict()
-                    if(not(author_b_id in network[author_a_id])):
-                        network[author_a_id][author_b_id]= 0
-                    if(not(author_b_id in network.keys())):
-                        network[author_b_id] = dict()
-                    if(not(author_a_id in network[author_b_id])):
-                        network[author_b_id][author_a_id]= 0
-                    network[author_a_id][author_b_id] = network[author_a_id][author_b_id] + 1
-                    network[author_b_id][author_a_id] = network[author_b_id][author_a_id] + 1
+        # find authors and counts of papers and of co-authorships
+        try:
+            authorIDs = genAuthorIDs( e["author"].split(" and ") )
+            paperList[e['ID']] = { 'authorIDs' : authorIDs, 'year' : e['year'] }
+            for i, author_a_id in enumerate( authorIDs ):
+                if not( author_a_id in authorList.keys() ):
+                    authorList[ author_a_id ] = {'papercount': 0}
+                authorList[ author_a_id ]['papercount'] += 1
+                for author_b_id in authorIDs[i+1:]:
+                    addCoauthorEdge( authorNetwork, author_a_id, author_b_id )
+        except KeyError as e:
+            # entries without 'author' are ignored
+            ignoredEntriesCount += 1
+            pass
 
-    print("source,target,weight")
-    for l in network.keys():
-        for u in network[l].keys():
-            print(u','.join((unicode(l),unicode(u),unicode(network[l][u]))).encode('utf-8').strip())
+
+    # pairs of papers
+    paperNetwork = dict()
+    for i, paper_i in enumerate( list(paperList.keys()) ):
+        for paper_j in list(paperList.keys())[i+1:]:
+            for author_i in paperList[paper_i]["authorIDs"]:
+                try:
+                    tmp = paperList[paper_j]["authorIDs"].index( author_i )
+                    # entry found, we have one connection
+                    addCoPaperEdge( paperNetwork, paper_i, paper_j )
+                except ValueError:
+                    # papers don't share author
+                    pass
+
+    return authorNetwork, authorList,  paperNetwork, paperList, ignoredEntriesCount
+
+
+if __name__ == '__main__':
+    if len(argv) < 2:
+        print("Analyse co-authorships in bibtex-files.\n")
+        print("Usage:\n\t%s BIBTEXFILENAME" %argv[0])
+    else:
+        # read file
+        filename = argv[1]
+        try:
+            bib_database = readBibtexfile( filename )
+            authorNetwork, authorList,  paperNetwork, paperList, ignoredEntriesCount = extractNetworks( bib_database )
+
+            # print results
+            print( "# total entries: %i\n# ignored entries: %i"  %( len(bib_database.entries),
+                                                                    ignoredEntriesCount ) )
+            print( "# authors: %i" %len(authorNetwork.keys()) )
+            printResults( path.split(filename)[1] ,authorNetwork, authorList, paperNetwork, paperList )
+
+
+        except FileNotFoundError:
+            print("File `%s` not found. Aborting." %filename)
