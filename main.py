@@ -109,6 +109,8 @@ def printResults( filenameBase, authorNetwork, authorList, paperNetwork, paperLi
     return
 
 def extractNetworks( bib_database ):
+    """Parses all bibtex-entries and analyses links between authors
+    and papers. Returns networks and lists."""
     # parse entries
     authorList = dict() # for number of papers for each author
     authorNetwork = dict() # for number of links between pairs of authors
@@ -129,7 +131,6 @@ def extractNetworks( bib_database ):
             # entries without 'author' are ignored
             ignoredEntriesCount += 1
             pass
-
 
     # pairs of papers
     paperNetwork = dict()
