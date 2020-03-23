@@ -13,7 +13,7 @@ extensionDefault_authorlist = ".authorlist.csv"
 extensionDefault_authorNetwork = ".authorNetwork.csv"
 extensionDefault_paperlist = ".paperlist.csv"
 extensionDefault_paperNetwork = ".paperNetwork.csv"
-
+extensionDefault_report = ".report.md"
 
 def readBibtexfile(filename):
     """Return a bib_database from File"""
@@ -160,10 +160,15 @@ if __name__ == '__main__':
             authorNetwork, authorList,  paperNetwork, paperList, ignoredEntriesCount = extractNetworks( bib_database )
 
             # print results
-            print( "# total entries: %i\n# ignored entries: %i"  %( len(bib_database.entries),
+            filenamebase = path.split(filename)[1]
+            print( "Saving report to %s" %(filenamebase + extensionDefault_report) )
+            f = open( filenamebase + extensionDefault_report, "w" )
+            f.write( "# General" )
+            f.write( "* total entries: %i\n# ignored entries: %i\n"  %( len(bib_database.entries),
                                                                     ignoredEntriesCount ) )
-            print( "# authors: %i" %len(authorNetwork.keys()) )
-            printResults( path.split(filename)[1] ,authorNetwork, authorList, paperNetwork, paperList )
+            f.write( "* number of authors: %i\n" %len(authorNetwork.keys()) )
+            f.close()
+            printResults( filenamebase, authorNetwork, authorList, paperNetwork, paperList )
 
 
         except FileNotFoundError:
