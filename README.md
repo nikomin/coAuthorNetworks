@@ -44,8 +44,7 @@ that.
 
 A bibtex example is available in `example/`. The two following graphs were done with [Gephi](https://gephi.org/).
 
-![Co-author network of phd.bib](example/phdAuthorNET.png)
-![Co-paper network of phd.bib](example/phdPaperNET.png)
+![](example/networks.png)
 
 
 ## Warranty
