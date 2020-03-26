@@ -163,8 +163,8 @@ if __name__ == '__main__':
             filenamebase = path.split(filename)[1]
             print( "Saving report to %s" %(filenamebase + extensionDefault_report) )
             f = open( filenamebase + extensionDefault_report, "w" )
-            f.write( "# General" )
-            f.write( "* total entries: %i\n# ignored entries: %i\n"  %( len(bib_database.entries),
+            f.write( "# Report for %s\n" %filenamebase )
+            f.write( "* total entries: %i\n* ignored entries: %i\n"  %( len(bib_database.entries),
                                                                     ignoredEntriesCount ) )
             f.write( "* number of authors: %i\n" %len(authorNetwork.keys()) )
             f.close()
