@@ -65,8 +65,8 @@ def addCoPaperEdge( paperNetwork, paper_i, paper_j ):
     paperNetwork[paper_j][paper_i] += 1
     return
 
-def printResults( filenameBase, authorNetwork, authorList, paperNetwork, paperList ):
-    """ Print authorList and -network. """
+def writeResults( filenameBase, authorNetwork, authorList, paperNetwork, paperList ):
+    """ Write lists and -networks of papers and authors to csv-files. """
 
     outfilename = filenameBase + extensionDefault_authorlist
     print( "saving authorlist to %s" %outfilename)
@@ -159,6 +159,9 @@ if __name__ == '__main__':
             bib_database = readBibtexfile( filename )
             authorNetwork, authorList,  paperNetwork, paperList, ignoredEntriesCount = extractNetworks( bib_database )
 
+            # write results to files
+            writeResults( filenamebase, authorNetwork, authorList, paperNetwork, paperList )
+
             # print results
             filenamebase = path.split(filename)[1]
             print( "Saving report to %s" %(filenamebase + extensionDefault_report) )
@@ -168,7 +171,6 @@ if __name__ == '__main__':
                                                                     ignoredEntriesCount ) )
             f.write( "* number of authors: %i\n" %len(authorNetwork.keys()) )
             f.close()
-            printResults( filenamebase, authorNetwork, authorList, paperNetwork, paperList )
 
 
         except FileNotFoundError:
