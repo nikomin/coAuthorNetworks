@@ -71,8 +71,10 @@ def extractNetworks( bib_database ):
     # parse entries
     authorList = dict() # for number of papers for each author
     authorNetwork = dict() # for number of links between pairs of authors
-    ignoredEntriesCount = 0 # entries in bib_database that did not have "author"-field
     paperList = dict()
+    paperNetwork = dict()
+
+    ignoredEntriesCount = 0 # entries in bib_database that did not have "author"-field
     for e in bib_database.entries:
         # find authors and counts of papers and of co-authorships
         try:
@@ -90,7 +92,6 @@ def extractNetworks( bib_database ):
             pass
 
     # pairs of papers
-    paperNetwork = dict()
     for i, paper_i in enumerate( list(paperList.keys()) ):
         for paper_j in list(paperList.keys())[i+1:]:
             for author_i in paperList[paper_i]["authorIDs"]:
@@ -105,24 +106,17 @@ def extractNetworks( bib_database ):
     return authorNetwork, authorList,  paperNetwork, paperList, ignoredEntriesCount
 
 
-def writeResults( filenameBase, authorNetwork, authorList, paperNetwork, paperList ):
-    """ Write lists and -networks of papers and authors to csv-files. """
+def writePapers( filenameBase, paperList, paperNetwork ):
+    """ Write csv of paperList and -network to files.
+            paperList: paperID,authorcount,year
+            paperNetwork: source,target,weight,relativeWeight"""
 
-    outfilename = filenameBase + extensionDefault_authorlist
-    print( "saving authorlist to %s" %outfilename)
+    outfilename = filenameBase + extensionDefault_paperlist
+    print( "saving paperlist to %s" %outfilename)
     f = open( outfilename, "w")
-    f.write( "author, papercount\n" )
-    for authorID in authorList.keys():
-        f.write( "%s,%i\n" %(authorID, authorList[authorID]["papercount"]) )
-    f.close()
-    
-    outfilename = filenameBase + extensionDefault_authorNetwork
-    print( "saving authornetwork to %s" %outfilename)
-    f = open( outfilename, "w")
-    f.write( "source,target,weight\n" )
-    for author in authorNetwork.keys():
-        for coAuthor in authorNetwork[author].keys():
-            f.write(author+","+coAuthor+","+str(authorNetwork[author][coAuthor])+'\n')
+    f.write( "paper,authorcount,year\n" )
+    for paperID in paperList.keys():
+        f.write( "%s,%i,%s\n" %(paperID, len(paperList[paperID]['authorIDs']), paperList[paperID]['year'] ) )
     f.close()
 
     outfilename = filenameBase + extensionDefault_paperNetwork
@@ -135,16 +129,31 @@ def writeResults( filenameBase, authorNetwork, authorList, paperNetwork, paperLi
             relativeWeight = absoluteWeight/len(paperList[paper]['authorIDs'])
             f.write(paper+","+coPaper+","+str(absoluteWeight)+","+str(relativeWeight)+'\n')
     f.close()
+    
+    return
 
-    outfilename = filenameBase + extensionDefault_paperlist
-    print( "saving paperlist to %s" %outfilename)
+def writeAuthors( filenameBase, authorList, authorNetwork ):
+    """ Write csv of paperList and -network to files.
+            authorList: author,papercount
+            authorNetwork: source,target,weight"""
+
+    outfilename = filenameBase + extensionDefault_authorlist
+    print( "saving authorlist to %s" %outfilename)
     f = open( outfilename, "w")
-    f.write( "paper,authorcount,year\n" )
-    for paperID in paperList.keys():
-        f.write( "%s,%i,%s\n" %(paperID, len(paperList[paperID]['authorIDs']), paperList[paperID]['year'] ) )
+    f.write( "author,papercount\n" )
+    for authorID in authorList.keys():
+        f.write( "%s,%i\n" %(authorID, authorList[authorID]["papercount"]) )
     f.close()
 
-    print( "Done." )
+    outfilename = filenameBase + extensionDefault_authorNetwork
+    print( "saving authornetwork to %s" %outfilename)
+    f = open( outfilename, "w")
+    f.write( "source,target,weight\n" )
+    for author in authorNetwork.keys():
+        for coAuthor in authorNetwork[author].keys():
+            f.write(author+","+coAuthor+","+str(authorNetwork[author][coAuthor])+'\n')
+    f.close()
+
     
     return
 
@@ -159,19 +168,23 @@ if __name__ == '__main__':
             bib_database = readBibtexfile( filename )
             authorNetwork, authorList,  paperNetwork, paperList, ignoredEntriesCount = extractNetworks( bib_database )
 
+            filenameBase = path.split(filename)[1]
+            
             # write results to files
-            writeResults( filenamebase, authorNetwork, authorList, paperNetwork, paperList )
-
-            # print results
-            filenamebase = path.split(filename)[1]
-            print( "Saving report to %s" %(filenamebase + extensionDefault_report) )
-            f = open( filenamebase + extensionDefault_report, "w" )
-            f.write( "# Report for %s\n" %filenamebase )
+            writePapers( filenameBase, paperList, paperNetwork )
+            writeAuthors( filenameBase, authorList, authorNetwork )
+    
+            # write report
+            print( "Saving report to %s" %(filenameBase + extensionDefault_report) )
+            f = open( filenameBase + extensionDefault_report, "w" )
+            f.write( "# Report for %s\n" %filenameBase )
             f.write( "* total entries: %i\n* ignored entries: %i\n"  %( len(bib_database.entries),
                                                                     ignoredEntriesCount ) )
             f.write( "* number of authors: %i\n" %len(authorNetwork.keys()) )
             f.close()
 
+
+            print( "Done." )
 
         except FileNotFoundError:
             print("File `%s` not found. Aborting." %filename)
