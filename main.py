@@ -65,6 +65,46 @@ def addCoPaperEdge( paperNetwork, paper_i, paper_j ):
     paperNetwork[paper_j][paper_i] += 1
     return
 
+def extractNetworks( bib_database ):
+    """Parses all bibtex-entries and analyses links between authors
+    and papers. Returns networks and lists."""
+    # parse entries
+    authorList = dict() # for number of papers for each author
+    authorNetwork = dict() # for number of links between pairs of authors
+    ignoredEntriesCount = 0 # entries in bib_database that did not have "author"-field
+    paperList = dict()
+    for e in bib_database.entries:
+        # find authors and counts of papers and of co-authorships
+        try:
+            authorIDs = genAuthorIDs( e["author"].split(" and ") )
+            paperList[e['ID']] = { 'authorIDs' : authorIDs, 'year' : e['year'] }
+            for i, author_a_id in enumerate( authorIDs ):
+                if not( author_a_id in authorList.keys() ):
+                    authorList[ author_a_id ] = {'papercount': 0}
+                authorList[ author_a_id ]['papercount'] += 1
+                for author_b_id in authorIDs[i+1:]:
+                    addCoauthorEdge( authorNetwork, author_a_id, author_b_id )
+        except KeyError as e:
+            # entries without 'author' are ignored
+            ignoredEntriesCount += 1
+            pass
+
+    # pairs of papers
+    paperNetwork = dict()
+    for i, paper_i in enumerate( list(paperList.keys()) ):
+        for paper_j in list(paperList.keys())[i+1:]:
+            for author_i in paperList[paper_i]["authorIDs"]:
+                try:
+                    tmp = paperList[paper_j]["authorIDs"].index( author_i )
+                    # entry found, we have one connection
+                    addCoPaperEdge( paperNetwork, paper_i, paper_j )
+                except ValueError:
+                    # papers don't share author
+                    pass
+
+    return authorNetwork, authorList,  paperNetwork, paperList, ignoredEntriesCount
+
+
 def writeResults( filenameBase, authorNetwork, authorList, paperNetwork, paperList ):
     """ Write lists and -networks of papers and authors to csv-files. """
 
@@ -107,46 +147,6 @@ def writeResults( filenameBase, authorNetwork, authorList, paperNetwork, paperLi
     print( "Done." )
     
     return
-
-def extractNetworks( bib_database ):
-    """Parses all bibtex-entries and analyses links between authors
-    and papers. Returns networks and lists."""
-    # parse entries
-    authorList = dict() # for number of papers for each author
-    authorNetwork = dict() # for number of links between pairs of authors
-    ignoredEntriesCount = 0 # entries in bib_database that did not have "author"-field
-    paperList = dict()
-    for e in bib_database.entries:
-        # find authors and counts of papers and of co-authorships
-        try:
-            authorIDs = genAuthorIDs( e["author"].split(" and ") )
-            paperList[e['ID']] = { 'authorIDs' : authorIDs, 'year' : e['year'] }
-            for i, author_a_id in enumerate( authorIDs ):
-                if not( author_a_id in authorList.keys() ):
-                    authorList[ author_a_id ] = {'papercount': 0}
-                authorList[ author_a_id ]['papercount'] += 1
-                for author_b_id in authorIDs[i+1:]:
-                    addCoauthorEdge( authorNetwork, author_a_id, author_b_id )
-        except KeyError as e:
-            # entries without 'author' are ignored
-            ignoredEntriesCount += 1
-            pass
-
-    # pairs of papers
-    paperNetwork = dict()
-    for i, paper_i in enumerate( list(paperList.keys()) ):
-        for paper_j in list(paperList.keys())[i+1:]:
-            for author_i in paperList[paper_i]["authorIDs"]:
-                try:
-                    tmp = paperList[paper_j]["authorIDs"].index( author_i )
-                    # entry found, we have one connection
-                    addCoPaperEdge( paperNetwork, paper_i, paper_j )
-                except ValueError:
-                    # papers don't share author
-                    pass
-
-    return authorNetwork, authorList,  paperNetwork, paperList, ignoredEntriesCount
-
 
 if __name__ == '__main__':
     if len(argv) < 2:
