@@ -157,6 +157,39 @@ def writeAuthors( filenameBase, authorList, authorNetwork ):
     
     return
 
+
+import networkx as nx
+def makePaperGraph( paperList, paperNetwork ):
+    """Returns graph linking papers when they share authors."""
+    G = nx.Graph()
+    for paper in paperList.keys():
+        G.add_node(paper)
+    for paper in paperNetwork.keys():
+        for copaper in paperNetwork[paper]:
+            edge = (paper,copaper)
+            G.add_edge(*edge)
+    return G
+
+def makeGraphReport( G ):
+    """Extract network characteristics and return a report."""
+    cc = list(nx.connected_components(G))
+    ccSizes = []
+    largestComp = cc[0]
+    largestCompSize = len(largestComp)
+    for i in cc:
+        ccSizes.append(len(i))
+        if len(i)>largestCompSize: #found a component bigger than the previously biggest
+            largestComp = i
+            largestCompSize = len(largestComp)
+    ccSizes.sort()
+
+    report = "* The largest connected component has %i papers, all these papers are connected via people authoring more than one paper.\n" %largestCompSize
+    report = report + "\t* One element of that component is \n`%s`.\n" %list(largestComp)[0]
+    report = report + "* %i papers of your research don't share authors with any other paper.\n" %ccSizes.count(1)
+
+    return report
+
+
 if __name__ == '__main__':
     if len(argv) < 2:
         print("Analyse co-authorships in bibtex-files.\n")
@@ -173,18 +206,32 @@ if __name__ == '__main__':
             # write results to files
             writePapers( filenameBase, paperList, paperNetwork )
             writeAuthors( filenameBase, authorList, authorNetwork )
-    
+
+            G = makePaperGraph( paperList, paperNetwork )
+            graphReport = makeGraphReport( G )
+
             # write report
             print( "Saving report to %s" %(filenameBase + extensionDefault_report) )
             f = open( filenameBase + extensionDefault_report, "w" )
             f.write( "# Report for %s\n" %filenameBase )
-            f.write( "* total entries: %i\n* ignored entries: %i\n"  %( len(bib_database.entries),
+            f.write( "* total publications: %i\n* ignored entries: %i\n"  %( len(bib_database.entries),
                                                                     ignoredEntriesCount ) )
             f.write( "* number of authors: %i\n" %len(authorNetwork.keys()) )
+            f.write( """\n## Network analysis
+
+The paper network is built by connecting papers that share
+authors. If paper A shares an author with paper B and
+paper B shares an author with paper C, then A,B and C are
+in a connected component. ***These components show
+communities of researchers.***\n\n""")
+
+
+            
+            f.write( graphReport )
             f.close()
 
 
-            print( "Done." )
+            print( "All done." )
 
         except FileNotFoundError:
             print("File `%s` not found. Aborting." %filename)
