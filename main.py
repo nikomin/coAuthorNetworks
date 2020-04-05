@@ -14,6 +14,7 @@ extensionDefault_authorNetwork = ".authorNetwork.csv"
 extensionDefault_paperlist = ".paperlist.csv"
 extensionDefault_paperNetwork = ".paperNetwork.csv"
 extensionDefault_report = ".report.md"
+extensionDefault_histogram = ".histogram.png"
 
 def readBibtexfile(filename):
     """Return a bib_database from File"""
@@ -168,11 +169,11 @@ def makePaperGraph( paperList, paperNetwork ):
         for copaper in paperNetwork[paper]:
             edge = (paper,copaper)
             G.add_edge(*edge)
-    return G
-
-def makeGraphReport( G ):
-    """Extract network characteristics and return a report."""
     cc = list(nx.connected_components(G))
+    return G, cc
+
+def makeGraphReport( G, cc ):
+    """Extract network characteristics and return a report."""
     ccSizes = []
     largestComp = cc[0]
     largestCompSize = len(largestComp)
@@ -184,10 +185,30 @@ def makeGraphReport( G ):
     ccSizes.sort()
 
     report = "* The largest connected component has %i papers, all these papers are connected via people authoring more than one paper.\n" %largestCompSize
-    report = report + "\t* One element of that component is \n`%s`.\n" %list(largestComp)[0]
+    report = report + "\t* One element of that component is:\n\n`%s`\n\n" %list(largestComp)[0]
     report = report + "* %i papers of your research don't share authors with any other paper.\n" %ccSizes.count(1)
 
     return report
+
+
+import matplotlib.pyplot as plt
+import numpy as np
+def drawHistogram( filenamebase, paperList, cc ):
+    """Writes histogram of papers to png-file."""
+    years=[]
+    for paper in paperList.keys():
+        years.append(int(paperList[paper]['year']))
+    years.sort()
+    num_bins = np.linspace(years[0],years[-1],years[-1]-years[0]) # one bin per year
+    n,bins,patches = plt.hist(years, num_bins,alpha=0.5)
+
+    yearsMaxCluster = []
+    for paper in cc[5]:
+        yearsMaxCluster.append(int(paperList[paper]['year']))
+    yearsMaxCluster.sort()
+    n,bins,patches = plt.hist(yearsMaxCluster, num_bins,alpha=0.5)
+    plt.savefig(filenamebase+extensionDefault_histogram)
+    return
 
 
 if __name__ == '__main__':
@@ -207,27 +228,32 @@ if __name__ == '__main__':
             writePapers( filenameBase, paperList, paperNetwork )
             writeAuthors( filenameBase, authorList, authorNetwork )
 
-            G = makePaperGraph( paperList, paperNetwork )
-            graphReport = makeGraphReport( G )
+            G, cc = makePaperGraph( paperList, paperNetwork )
+            graphReport = makeGraphReport( G, cc )
+            drawHistogram( filenameBase, paperList, cc )
 
             # write report
             print( "Saving report to %s" %(filenameBase + extensionDefault_report) )
             f = open( filenameBase + extensionDefault_report, "w" )
             f.write( "# Report for %s\n" %filenameBase )
+            f.write( "\nYour database was read and has the following general characteristics:\n\n" )
             f.write( "* total publications: %i\n* ignored entries: %i\n"  %( len(bib_database.entries),
                                                                     ignoredEntriesCount ) )
             f.write( "* number of authors: %i\n" %len(authorNetwork.keys()) )
             f.write( """\n## Network analysis
 
 The paper network is built by connecting papers that share
-authors. If paper A shares an author with paper B and
-paper B shares an author with paper C, then A,B and C are
-in a connected component. ***These components show
-communities of researchers.***\n\n""")
+authors. If *paper A* shares an author with *paper B* and
+*paper B* shares an author with *paper C*, then *A*,*B* and *C* are
+in a connected component. **These components might show
+communities of researchers.**\n\n""")
 
 
             
             f.write( graphReport )
+
+            f.write( "\n![Publications per year (total and of largest component)](%s)\n" %(filenameBase+extensionDefault_histogram) )
+            
             f.close()
 
 
