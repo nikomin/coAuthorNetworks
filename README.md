@@ -54,9 +54,9 @@ pandoc phd.bib.report.md -o phd.bib.report.pdf
 ```
 
 
-[Gephi](https://gephi.org/) does a pretty good job doing at drawing
+[Gephi](https://gephi.org/) does a pretty good job at drawing
 networks. The two following graphs were done with
-[Gephi](https://gephi.org/) using the `bibtex`-file from the example.
+[Gephi](https://gephi.org/) using the output from the example-`bibtex`.
 
 ![](example/networks.png)
 
@@ -64,14 +64,13 @@ networks. The two following graphs were done with
 ## Warranty
 
 There is none. The software might or might not work for you or even
-have unexpected effects like data loss or much worse. I don't know,
-but did use it and I would say it's rather safe to run. In any case:
-always have a backup of your stuff!
+have unexpected effects like data loss or much worse. But I guess it's
+rather safe to run. In any case: always have a backup at hand!
 
 ## Authors
 
-  * Niko Komin ([on Laikaundfreunde](http://www.laikaundfreunde.de/niko-komin))
-  * Simon Carrignon ([on Framagit](https://framagit.org/sc), [on Github](https://github.com/simoncarrignon), [on Twitter](https://twitter.com/SimonCarrignon/)).
+  * Niko Komin (see [Laikaundfreunde](http://www.laikaundfreunde.de/niko-komin))
+  * Simon Carrignon (see [Framagit](https://framagit.org/sc), [on Github](https://github.com/simoncarrignon) or on [Twitter](https://twitter.com/SimonCarrignon/)).
 
 
 ## License
