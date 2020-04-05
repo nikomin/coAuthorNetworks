@@ -16,11 +16,13 @@ found [here](https://framagit.org/sc/pybibnet). Simon is also [on Github](https:
 
 ## Prerequisites
 
-The software is developed, used and tested with `python3` and
+The software is developed, used and tested with `python3`.  It
+requires
 [`bibtexparser`](https://github.com/sciunto-org/python-bibtexparser)
-version `1.1.0`. The latter can be installed by typing:
-
-    pip3 install bibtexparser
+which can be installed with `pip3 install bibtexparser`. Other
+non-standard libraries are `networkx`, `matplotlib` and `numpy`. For
+best results use a markdown renderer like `pandoc` to get
+`.pdf`-Files.
 
 
 ## Usage
@@ -29,20 +31,32 @@ version `1.1.0`. The latter can be installed by typing:
 ./main.py BIBTEXFILENAME
 ```
 
-It expects a bibtex-file at `FILENAME`. The output consists of four
-files:
+It expects a bibtex-file at `FILENAME`. A report is written to
+`FILENAME.report.md` which can be viewed with a simple text
+editor. But it looks much nicer when rendered as `pdf` or `html`. The
+example `pdf` is made with `pandoc phd.bib.report.md -o
+phd.bib.report.pdf`.
+
+So far the network has to be visualized with a third party
+program. Use the following files:
 
   * `FILENAME.authorlist.csv`
   * `FILENAME.authorNetwork.csv` - network of authors who share a publication
   * `FILENAME.paperlist.csv`
   * `FILENAME.paperNetwork.csv` - network of publications which share an author
 
-Visualization of the networks is not (yet)
-implemented. [Gephi](https://gephi.org/) does a pretty good job doing
-that.
+To run the example do:
+
+```bash
+cd example
+../main.py phd.bib
+pandoc phd.bib.report.md -o phd.bib.report.pdf
+```
 
 
-A bibtex example is available in `example/`. The two following graphs were done with [Gephi](https://gephi.org/).
+[Gephi](https://gephi.org/) does a pretty good job doing at drawing
+networks. The two following graphs were done with
+[Gephi](https://gephi.org/) using the `bibtex`-file from the example.
 
 ![](example/networks.png)
 
