@@ -178,7 +178,10 @@ def drawHistogram( filenamebase, paperList, cc ):
     """Writes histogram of papers to png-file."""
     years=[]
     for paper in paperList.keys():
-        years.append(int(paperList[paper]['year']))
+        try:
+            years.append(int(paperList[paper]['year']))
+        except ValueError as e:
+            print(e)
     years.sort()
     num_bins = np.linspace(years[0],years[-1],years[-1]-years[0]) # one bin per year
     n,bins,patches = plt.hist(years, num_bins,alpha=0.5)
@@ -226,7 +229,7 @@ communities of researchers.**\n\n""")
 
     drawHistogram( filenameBase, paperList, cc )
 
-    return report
+    return
 
 
 if __name__ == '__main__':
