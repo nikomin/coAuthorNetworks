@@ -174,7 +174,7 @@ def makePaperGraph( paperList, paperNetwork ):
 
 import matplotlib.pyplot as plt
 import numpy as np
-def drawHistogram( filenamebase, paperList, cc ):
+def drawHistogram( filenamebase, paperList, largestComp ):
     """Writes histogram of papers to png-file."""
     years=[]
     for paper in paperList.keys():
@@ -187,8 +187,11 @@ def drawHistogram( filenamebase, paperList, cc ):
     n,bins,patches = plt.hist(years, num_bins,alpha=0.5)
 
     yearsMaxCluster = []
-    for paper in cc[5]:
-        yearsMaxCluster.append(int(paperList[paper]['year']))
+    for paper in largestComp:
+        try:
+            yearsMaxCluster.append(int(paperList[paper]['year']))
+        except ValueError as e:
+            print(e)
     yearsMaxCluster.sort()
     n,bins,patches = plt.hist(yearsMaxCluster, num_bins,alpha=0.5)
     plt.savefig(filenamebase+extensionDefault_histogram)
@@ -207,6 +210,7 @@ def writeGraphReport( filenameBase, G ):
             largestCompSize = len(largestComp)
     ccSizes.sort()
 
+    drawHistogram( filenameBase, paperList, largestComp )
     print( "Saving report to %s" %(filenameBase + extensionDefault_report) )
     f = open( filenameBase + extensionDefault_report, "w" )
     f.write( "# Report for %s\n" %filenameBase )
@@ -227,7 +231,6 @@ communities of researchers.**\n\n""")
     f.write( "\n![Publications per year (total and of largest component)](%s)\n" %(filenameBase+extensionDefault_histogram) )
     f.close()
 
-    drawHistogram( filenameBase, paperList, cc )
 
     return
 
