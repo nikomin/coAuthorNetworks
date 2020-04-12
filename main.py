@@ -16,6 +16,7 @@ extensionDefault_paperNetwork = ".paperNetwork.csv"
 extensionDefault_report = ".report.md"
 extensionDefault_histogram = ".histogram.png"
 
+
 def readBibtexfile(filename):
     """Return a bib_database from File"""
     with open(filename) as bibtex_file:
@@ -225,9 +226,10 @@ authors. If *paper A* shares an author with *paper B* and
 *paper B* shares an author with *paper C*, then *A*,*B* and *C* are
 in a connected component. **These components might show
 communities of researchers.**\n\n""")
-    f.write( "* The largest connected component has %i papers, all these papers are connected via people authoring more than one paper.\n" %largestCompSize )
+    f.write( "* The largest connected component has %i (%i%%) papers.\n" %(largestCompSize,largestCompSize/len(bib_database.entries)*100) )
     f.write( "\t* One element of that component is:\n\n`%s`\n\n" %list(largestComp)[0])
-    f.write( "* %i papers of your research don't share authors with any other paper.\n" %ccSizes.count(1))
+    f.write( "* the second largest group contains %i (%i%%) papers.\n" %(ccSizes[-2],ccSizes[-2]/len(bib_database.entries)*100) )
+    f.write( "* %i papers (%i%%) of your research don't share authors with any other paper.\n" %(ccSizes.count(1), ccSizes.count(1)/len(bib_database.entries)*100) )
     f.write( "\n![Publications per year (total and of largest component)](%s)\n" %(filenameBase+extensionDefault_histogram) )
     f.close()
 
