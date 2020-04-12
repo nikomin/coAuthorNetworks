@@ -198,6 +198,7 @@ def drawHistogram( filenamebase, paperList, largestComp ):
     plt.savefig(filenamebase+extensionDefault_histogram)
     return
 
+from classes import Report
 def writeGraphReport( filenameBase, G ):
     """Extract network characteristics and return a report."""
     cc = list(nx.connected_components(G))
@@ -213,24 +214,23 @@ def writeGraphReport( filenameBase, G ):
 
     drawHistogram( filenameBase, paperList, largestComp )
     print( "Saving report to %s" %(filenameBase + extensionDefault_report) )
+    
+    report = Report()
+    report.bibfilename = filenameBase
+    report.totalPubs = len(bib_database.entries)
+    report.ignoredPubs = ignoredEntriesCount
+    report.nrAuthors = len(authorNetwork.keys())
+    report.maxCCsize = largestCompSize
+    report.maxCCsizePerTotal = largestCompSize/len(bib_database.entries)
+    report.maxCCelement = list(largestComp)[0]
+    report.secondCCsize = ccSizes[-2]
+    report.secondCCsizePerTotal = ccSizes[-2]/len(bib_database.entries)
+    report.numberUnconnectedPapers = ccSizes.count(1)
+    report.unconnectedPapersPerTotal = ccSizes.count(1)/len(bib_database.entries)
+    report.histogramOutfilename = filenameBase+extensionDefault_histogram
+    
     f = open( filenameBase + extensionDefault_report, "w" )
-    f.write( "# Report for %s\n" %filenameBase )
-    f.write( "\nYour database was read and has the following general characteristics:\n\n" )
-    f.write( "* total publications: %i\n* ignored entries: %i\n"  %( len(bib_database.entries),
-                                                            ignoredEntriesCount ) )
-    f.write( "* number of authors: %i\n" %len(authorNetwork.keys()) )
-    f.write( """\n## Network analysis
-
-The paper network is built by connecting papers that share
-authors. If *paper A* shares an author with *paper B* and
-*paper B* shares an author with *paper C*, then *A*,*B* and *C* are
-in a connected component. **These components might show
-communities of researchers.**\n\n""")
-    f.write( "* The largest connected component has %i (%i%%) papers.\n" %(largestCompSize,largestCompSize/len(bib_database.entries)*100) )
-    f.write( "\t* One element of that component is:\n\n`%s`\n\n" %list(largestComp)[0])
-    f.write( "* the second largest group contains %i (%i%%) papers.\n" %(ccSizes[-2],ccSizes[-2]/len(bib_database.entries)*100) )
-    f.write( "* %i papers (%i%%) of your research don't share authors with any other paper.\n" %(ccSizes.count(1), ccSizes.count(1)/len(bib_database.entries)*100) )
-    f.write( "\n![Publications per year (total and of largest component)](%s)\n" %(filenameBase+extensionDefault_histogram) )
+    f.write( report.text() )
     f.close()
 
 
