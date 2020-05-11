@@ -6,8 +6,14 @@ import bibtexparser
 from bibtexparser.customization import splitname
 from bibtexparser.latexenc import latex_to_unicode
 
+import networkx as nx
+import matplotlib.pyplot as plt
+import numpy as np
+
 from sys import argv
 from os import path
+
+from classes import Report
 
 extensionDefault_authorlist = ".authorlist.csv"
 extensionDefault_authorNetwork = ".authorNetwork.csv"
@@ -160,7 +166,6 @@ def writeAuthors( filenameBase, authorList, authorNetwork ):
     return
 
 
-import networkx as nx
 def makePaperGraph( paperList, paperNetwork ):
     """Returns graph linking papers when they share authors."""
     G = nx.Graph()
@@ -173,8 +178,6 @@ def makePaperGraph( paperList, paperNetwork ):
     return G
 
 
-import matplotlib.pyplot as plt
-import numpy as np
 def drawHistogram( filenamebase, paperList, largestComp ):
     """Writes histogram of papers to png-file."""
     years=[]
@@ -198,7 +201,6 @@ def drawHistogram( filenamebase, paperList, largestComp ):
     plt.savefig(filenamebase+extensionDefault_histogram)
     return
 
-from classes import Report
 def writeGraphReport( filenameBase, G ):
     """Extract network characteristics and return a report."""
     cc = list(nx.connected_components(G))
