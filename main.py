@@ -201,7 +201,7 @@ def drawHistogram( filenamebase, paperList, largestComp ):
     plt.savefig(filenamebase+extensionDefault_histogram)
     return
 
-def writeGraphReport( filenameBase, G ):
+def writeGraphReport( filenameBase, G, bib_database, paperList, authorNetwork, ignoredEntriesCount ):
     """Extract network characteristics and return a report."""
     cc = list(nx.connected_components(G))
     ccSizes = []
@@ -238,6 +238,21 @@ def writeGraphReport( filenameBase, G ):
 
     return
 
+def main(filename):
+    """ """
+    bib_database = readBibtexfile( filename )
+    authorNetwork, authorList,  paperNetwork, paperList, ignoredEntriesCount = extractNetworks( bib_database )
+    
+    filenameBase = path.split(filename)[1]
+    
+    # write results to files
+    writePapers( filenameBase, paperList, paperNetwork )
+    writeAuthors( filenameBase, authorList, authorNetwork )
+    
+    G = makePaperGraph( paperList, paperNetwork )
+    
+    # write report
+    writeGraphReport( filenameBase, G, bib_database, paperList, authorNetwork, ignoredEntriesCount )
 
 if __name__ == '__main__':
     if len(argv) < 2:
@@ -247,22 +262,7 @@ if __name__ == '__main__':
         # read file
         filename = argv[1]
         try:
-            bib_database = readBibtexfile( filename )
-            authorNetwork, authorList,  paperNetwork, paperList, ignoredEntriesCount = extractNetworks( bib_database )
-
-            filenameBase = path.split(filename)[1]
-            
-            # write results to files
-            writePapers( filenameBase, paperList, paperNetwork )
-            writeAuthors( filenameBase, authorList, authorNetwork )
-
-            G = makePaperGraph( paperList, paperNetwork )
-
-            # write report
-            writeGraphReport( filenameBase, G )
-
-
-    
+            main( filename )    
             print( "All done." )
 
         except FileNotFoundError:
