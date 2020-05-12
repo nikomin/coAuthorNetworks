@@ -3,9 +3,6 @@
 Analysis of co-authorships between publications taken from a bibtex file.
 """
 import bibtexparser
-from bibtexparser.customization import splitname
-from bibtexparser.latexenc import latex_to_unicode
-
 import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
@@ -35,7 +32,7 @@ def genAuthorIDs(authorNames):
     """ Return a unique ID for each name in given list. """
     authorIDs = []
     for authorName in authorNames:
-        tmp = splitname( latex_to_unicode(authorName) )
+        tmp = bibtexparser.customization.splitname( bibtexparser.latexenc.latex_to_unicode(authorName) )
         tmpFirstname = ''
         try:
             tmpFirstname = tmp["first"][0]
