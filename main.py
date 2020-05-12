@@ -74,7 +74,7 @@ def addCoPaperEdge( paperNetwork, paper_i, paper_j ):
     paperNetwork[paper_j][paper_i] += 1
     return
 
-def extractNetworks( bib_database ):
+def constructNetworks( bib_database ):
     """Parses all bibtex-entries and analyses links between authors
     and papers. Returns networks and lists."""
     # parse entries
@@ -113,12 +113,12 @@ def extractNetworks( bib_database ):
     return biblio
 
 
-def writePapersToFile( filenameBase, biblio ):
+def writePapersToFile( biblio ):
     """ Write csv of paperList and -network to files.
             paperList: paperID,authorcount,year
             paperNetwork: source,target,weight,relativeWeight"""
 
-    outfilename = filenameBase + extensionDefault_paperlist
+    outfilename = biblio.filenameBase + extensionDefault_paperlist
     print( "saving paperlist to %s" %outfilename)
     f = open( outfilename, "w")
     f.write( "paper,authorcount,year\n" )
@@ -128,7 +128,7 @@ def writePapersToFile( filenameBase, biblio ):
                                 biblio.paperList[paperID]['year'] ) )
     f.close()
 
-    outfilename = filenameBase + extensionDefault_paperNetwork
+    outfilename = biblio.filenameBase + extensionDefault_paperNetwork
     print( "saving papernetwork to %s" %outfilename)
     f = open( outfilename, "w")
     f.write( "source,target,weight,relativeWeight\n" )
@@ -141,12 +141,12 @@ def writePapersToFile( filenameBase, biblio ):
     
     return
 
-def writeAuthorsToFile( filenameBase, biblio ):
+def writeAuthorsToFile( biblio ):
     """ Write csv of paperList and -network to files.
             authorList: author,papercount
             authorNetwork: source,target,weight"""
 
-    outfilename = filenameBase + extensionDefault_authorlist
+    outfilename = biblio.filenameBase + extensionDefault_authorlist
     print( "saving authorlist to %s" %outfilename)
     f = open( outfilename, "w")
     f.write( "author,papercount\n" )
@@ -154,7 +154,7 @@ def writeAuthorsToFile( filenameBase, biblio ):
         f.write( "%s,%i\n" %(authorID, biblio.authorList[authorID]["papercount"]) )
     f.close()
 
-    outfilename = filenameBase + extensionDefault_authorNetwork
+    outfilename = biblio.filenameBase + extensionDefault_authorNetwork
     print( "saving authornetwork to %s" %outfilename)
     f = open( outfilename, "w")
     f.write( "source,target,weight\n" )
@@ -167,13 +167,13 @@ def writeAuthorsToFile( filenameBase, biblio ):
     return
 
 
-def makePaperGraph( paperList, paperNetwork ):
+def constructPaperGraph( biblio ):
     """Returns graph linking papers when they share authors."""
     G = nx.Graph()
-    for paper in paperList.keys():
+    for paper in biblio.paperList.keys():
         G.add_node(paper)
-    for paper in paperNetwork.keys():
-        for copaper in paperNetwork[paper]:
+    for paper in biblio.paperNetwork.keys():
+        for copaper in biblio.paperNetwork[paper]:
             edge = (paper,copaper)
             G.add_edge(*edge)
     return G
@@ -202,9 +202,9 @@ def drawHistogram( filenamebase, paperList, largestComp ):
     plt.savefig(filenamebase+extensionDefault_histogram)
     return
 
-def writeGraphReport( filenameBase, G, bib_database, paperList, authorNetwork, ignoredEntriesCount ):
+def writeGraphReport( biblio ):
     """Extract network characteristics and return a report."""
-    cc = list(nx.connected_components(G))
+    cc = list(nx.connected_components( biblio.graphOfPapers ))
     ccSizes = []
     largestComp = cc[0]
     largestCompSize = len(largestComp)
@@ -215,24 +215,24 @@ def writeGraphReport( filenameBase, G, bib_database, paperList, authorNetwork, i
             largestCompSize = len(largestComp)
     ccSizes.sort()
 
-    drawHistogram( filenameBase, paperList, largestComp )
-    print( "Saving report to %s" %(filenameBase + extensionDefault_report) )
+    drawHistogram( biblio.filenameBase, biblio.paperList, largestComp )
+    print( "Saving report to %s" %(biblio.filenameBase + extensionDefault_report) )
     
     report = Report()
-    report.bibfilename = filenameBase
-    report.totalPubs = len(bib_database.entries)
-    report.ignoredPubs = ignoredEntriesCount
-    report.nrAuthors = len(authorNetwork.keys())
+    report.bibfilename = biblio.filenameBase
+    report.totalPubs = biblio.totalEntriesCount
+    report.ignoredPubs = biblio.ignoredEntriesCount
+    report.nrAuthors = len(biblio.authorNetwork.keys())
     report.maxCCsize = largestCompSize
-    report.maxCCsizePerTotal = largestCompSize/len(bib_database.entries)
+    report.maxCCsizePerTotal = largestCompSize/biblio.totalEntriesCount
     report.maxCCelement = list(largestComp)[0]
     report.secondCCsize = ccSizes[-2]
-    report.secondCCsizePerTotal = ccSizes[-2]/len(bib_database.entries)
+    report.secondCCsizePerTotal = ccSizes[-2]/biblio.totalEntriesCount
     report.numberUnconnectedPapers = ccSizes.count(1)
-    report.unconnectedPapersPerTotal = ccSizes.count(1)/len(bib_database.entries)
-    report.histogramOutfilename = filenameBase+extensionDefault_histogram
+    report.unconnectedPapersPerTotal = ccSizes.count(1)/biblio.totalEntriesCount
+    report.histogramOutfilename = biblio.filenameBase+extensionDefault_histogram
     
-    f = open( filenameBase + extensionDefault_report, "w" )
+    f = open( biblio.filenameBase + extensionDefault_report, "w" )
     f.write( report.text() )
     f.close()
 
@@ -241,20 +241,21 @@ def writeGraphReport( filenameBase, G, bib_database, paperList, authorNetwork, i
 
 def main(filename):
     """ """
+
+    # parse bibtex-file
     bib_database = readBibtexfile( filename )
 
-    bibliography = extractNetworks( bib_database )
+    # construct networks and corresponding graphs
+    bibliography = constructNetworks( bib_database )
+    bibliography.graphOfPapers = constructPaperGraph( bibliography )
+    bibliography.filenameBase = path.split(filename)[1]
         
-    filenameBase = path.split(filename)[1]
-    
-    # write results to files
-    writePapersToFile( filenameBase, bibliography )
-    writeAuthorsToFile( filenameBase, bibliography )
-    
-    G = makePaperGraph( bibliography.paperList, bibliography.paperNetwork )
-    
+    # write networks to file for later analysis
+    writePapersToFile( bibliography )
+    writeAuthorsToFile( bibliography )
+
     # write report
-    writeGraphReport( filenameBase, G, bib_database, bibliography.paperList, bibliography.authorNetwork, bibliography.ignoredEntriesCount )
+    writeGraphReport( bibliography )
 
 if __name__ == '__main__':
     if len(argv) < 2:
