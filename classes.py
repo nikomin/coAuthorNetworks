@@ -1,3 +1,12 @@
+class Bibliography:
+    authorList = dict() # for number of papers for each author
+    authorNetwork = dict() # for number of links between pairs of authors
+    paperList = dict()
+    paperNetwork = dict()
+    ignoredEntriesCount = 0 # entries in bib_database that did not have "author"-field
+    totalEntriesCount = 0
+
+
 class Report:
     bibfilename = None
     totalPubs = None

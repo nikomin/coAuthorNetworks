@@ -14,6 +14,7 @@ from sys import argv
 from os import path
 
 from classes import Report
+from classes import Bibliography
 
 extensionDefault_authorlist = ".authorlist.csv"
 extensionDefault_authorNetwork = ".authorNetwork.csv"
@@ -77,44 +78,42 @@ def extractNetworks( bib_database ):
     """Parses all bibtex-entries and analyses links between authors
     and papers. Returns networks and lists."""
     # parse entries
-    authorList = dict() # for number of papers for each author
-    authorNetwork = dict() # for number of links between pairs of authors
-    paperList = dict()
-    paperNetwork = dict()
 
-    ignoredEntriesCount = 0 # entries in bib_database that did not have "author"-field
+    biblio = Bibliography()
+    biblio.totalEntriesCount = len(bib_database.entries)
+    
     for e in bib_database.entries:
         # find authors and counts of papers and of co-authorships
         try:
             authorIDs = genAuthorIDs( e["author"].split(" and ") )
-            paperList[e['ID']] = { 'authorIDs' : authorIDs, 'year' : e['year'] }
+            biblio.paperList[e['ID']] = { 'authorIDs' : authorIDs, 'year' : e['year'] }
             for i, author_a_id in enumerate( authorIDs ):
-                if not( author_a_id in authorList.keys() ):
-                    authorList[ author_a_id ] = {'papercount': 0}
-                authorList[ author_a_id ]['papercount'] += 1
+                if not( author_a_id in biblio.authorList.keys() ):
+                    biblio.authorList[ author_a_id ] = {'papercount': 0}
+                biblio.authorList[ author_a_id ]['papercount'] += 1
                 for author_b_id in authorIDs[i+1:]:
-                    addCoauthorEdge( authorNetwork, author_a_id, author_b_id )
+                    addCoauthorEdge( biblio.authorNetwork, author_a_id, author_b_id )
         except KeyError as e:
             # entries without 'author' are ignored
-            ignoredEntriesCount += 1
+            biblio.ignoredEntriesCount += 1
             pass
 
     # pairs of papers
-    for i, paper_i in enumerate( list(paperList.keys()) ):
-        for paper_j in list(paperList.keys())[i+1:]:
-            for author_i in paperList[paper_i]["authorIDs"]:
+    for i, paper_i in enumerate( list(biblio.paperList.keys()) ):
+        for paper_j in list(biblio.paperList.keys())[i+1:]:
+            for author_i in biblio.paperList[paper_i]["authorIDs"]:
                 try:
-                    tmp = paperList[paper_j]["authorIDs"].index( author_i )
+                    tmp = biblio.paperList[paper_j]["authorIDs"].index( author_i )
                     # entry found, we have one connection
-                    addCoPaperEdge( paperNetwork, paper_i, paper_j )
+                    addCoPaperEdge( biblio.paperNetwork, paper_i, paper_j )
                 except ValueError:
                     # papers don't share author
                     pass
 
-    return authorNetwork, authorList,  paperNetwork, paperList, ignoredEntriesCount
+    return biblio
 
 
-def writePapers( filenameBase, paperList, paperNetwork ):
+def writePapersToFile( filenameBase, biblio ):
     """ Write csv of paperList and -network to files.
             paperList: paperID,authorcount,year
             paperNetwork: source,target,weight,relativeWeight"""
@@ -123,24 +122,26 @@ def writePapers( filenameBase, paperList, paperNetwork ):
     print( "saving paperlist to %s" %outfilename)
     f = open( outfilename, "w")
     f.write( "paper,authorcount,year\n" )
-    for paperID in paperList.keys():
-        f.write( "%s,%i,%s\n" %(paperID, len(paperList[paperID]['authorIDs']), paperList[paperID]['year'] ) )
+    for paperID in biblio.paperList.keys():
+        f.write( "%s,%i,%s\n" %(paperID,
+                                len(biblio.paperList[paperID]['authorIDs']),
+                                biblio.paperList[paperID]['year'] ) )
     f.close()
 
     outfilename = filenameBase + extensionDefault_paperNetwork
     print( "saving papernetwork to %s" %outfilename)
     f = open( outfilename, "w")
     f.write( "source,target,weight,relativeWeight\n" )
-    for paper in paperNetwork.keys():
-        for coPaper in paperNetwork[paper].keys():
-            absoluteWeight = paperNetwork[paper][coPaper]
-            relativeWeight = absoluteWeight/len(paperList[paper]['authorIDs'])
+    for paper in biblio.paperNetwork.keys():
+        for coPaper in biblio.paperNetwork[paper].keys():
+            absoluteWeight = biblio.paperNetwork[paper][coPaper]
+            relativeWeight = absoluteWeight/len(biblio.paperList[paper]['authorIDs'])
             f.write(paper+","+coPaper+","+str(absoluteWeight)+","+str(relativeWeight)+'\n')
     f.close()
     
     return
 
-def writeAuthors( filenameBase, authorList, authorNetwork ):
+def writeAuthorsToFile( filenameBase, biblio ):
     """ Write csv of paperList and -network to files.
             authorList: author,papercount
             authorNetwork: source,target,weight"""
@@ -149,17 +150,17 @@ def writeAuthors( filenameBase, authorList, authorNetwork ):
     print( "saving authorlist to %s" %outfilename)
     f = open( outfilename, "w")
     f.write( "author,papercount\n" )
-    for authorID in authorList.keys():
-        f.write( "%s,%i\n" %(authorID, authorList[authorID]["papercount"]) )
+    for authorID in biblio.authorList.keys():
+        f.write( "%s,%i\n" %(authorID, biblio.authorList[authorID]["papercount"]) )
     f.close()
 
     outfilename = filenameBase + extensionDefault_authorNetwork
     print( "saving authornetwork to %s" %outfilename)
     f = open( outfilename, "w")
     f.write( "source,target,weight\n" )
-    for author in authorNetwork.keys():
-        for coAuthor in authorNetwork[author].keys():
-            f.write(author+","+coAuthor+","+str(authorNetwork[author][coAuthor])+'\n')
+    for author in biblio.authorNetwork.keys():
+        for coAuthor in biblio.authorNetwork[author].keys():
+            f.write(author+","+coAuthor+","+str(biblio.authorNetwork[author][coAuthor])+'\n')
     f.close()
 
     
@@ -241,18 +242,19 @@ def writeGraphReport( filenameBase, G, bib_database, paperList, authorNetwork, i
 def main(filename):
     """ """
     bib_database = readBibtexfile( filename )
-    authorNetwork, authorList,  paperNetwork, paperList, ignoredEntriesCount = extractNetworks( bib_database )
-    
+
+    bibliography = extractNetworks( bib_database )
+        
     filenameBase = path.split(filename)[1]
     
     # write results to files
-    writePapers( filenameBase, paperList, paperNetwork )
-    writeAuthors( filenameBase, authorList, authorNetwork )
+    writePapersToFile( filenameBase, bibliography )
+    writeAuthorsToFile( filenameBase, bibliography )
     
-    G = makePaperGraph( paperList, paperNetwork )
+    G = makePaperGraph( bibliography.paperList, bibliography.paperNetwork )
     
     # write report
-    writeGraphReport( filenameBase, G, bib_database, paperList, authorNetwork, ignoredEntriesCount )
+    writeGraphReport( filenameBase, G, bib_database, bibliography.paperList, bibliography.authorNetwork, bibliography.ignoredEntriesCount )
 
 if __name__ == '__main__':
     if len(argv) < 2:
