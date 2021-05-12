@@ -205,6 +205,8 @@ def writeGraphReport( biblio ):
     ccSizes = []
     largestComp = cc[0]
     largestCompSize = len(largestComp)
+    
+    # iterate all connected components
     for i in cc:
         ccSizes.append(len(i))
         if len(i)>largestCompSize: #found a component bigger than the previously biggest
