@@ -222,6 +222,11 @@ def writeGraphReport( biblio ):
     report.totalPubs = biblio.totalEntriesCount
     report.ignoredPubs = biblio.ignoredEntriesCount
     report.nrAuthors = len(biblio.authorNetwork.keys())
+
+    report.maxCC = ""
+    for paper in largestComp:
+        report.maxCC = report.maxCC+paper+", "
+    
     report.maxCCsize = largestCompSize
     report.maxCCsizePerTotal = largestCompSize/biblio.totalEntriesCount
     report.maxCCelement = list(largestComp)[0]
@@ -264,7 +269,7 @@ if __name__ == '__main__':
         # read file
         filename = argv[1]
         try:
-            main( filename )    
+            main( filename )
             print( "All done." )
 
         except FileNotFoundError:

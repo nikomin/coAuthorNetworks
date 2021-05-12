@@ -14,6 +14,7 @@ class Report:
     totalPubs = None
     ignoredPubs = None
     nrAuthors = None
+    maxCC = None
     maxCCsize = None
     maxCCsizePerTotal = None
     maxCCelement = None
@@ -22,6 +23,7 @@ class Report:
     numberUnconnectedPapers = None
     unconnectedPapersPerTotal = None
     histogramOutfilename = None
+
     
     raw = """# Report for {bibfilename}
 Your database was read and has the following general characteristics:
@@ -38,8 +40,10 @@ authors. If *paper A* shares an author with *paper B* and
 in a connected component. **These components might show
 communities of researchers.**
 
-* The largest connected component has {maxCCsize} ({maxCCsizePerTotal:.0%}) papers.
-    * One element of that component is: {maxCCelement}
+* The largest connected component has {maxCCsize} ({maxCCsizePerTotal:.0%}) papers:
+
+    {maxCC}
+
 * the second largest group contains {secondCCsize} ({secondCCsizePerTotal:.0%}) papers.
 * {numberUnconnectedPapers} papers ({unconnectedPapersPerTotal:.0%}) of your research don't share authors with any other paper.
 
@@ -53,6 +57,7 @@ communities of researchers.**
                                maxCCsize = self.maxCCsize,
                                maxCCsizePerTotal = self.maxCCsizePerTotal,
                                maxCCelement = self.maxCCelement,
+                               maxCC = self.maxCC,
                                secondCCsize = self.secondCCsize,
                                secondCCsizePerTotal = self.secondCCsizePerTotal,
                                numberUnconnectedPapers = self.numberUnconnectedPapers,
