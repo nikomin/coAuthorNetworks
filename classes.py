@@ -14,10 +14,11 @@ class Report:
     totalPubs = None
     ignoredPubs = None
     nrAuthors = None
-    maxCC = None
+    maxCC = ""
     maxCCsize = None
     maxCCsizePerTotal = None
-    maxCCelement = None
+    authorsOfMaxCC = ""
+    
     secondCCsize = None
     secondCCsizePerTotal = None
     numberUnconnectedPapers = None
@@ -32,7 +33,7 @@ Your database was read and has the following general characteristics:
 * ignored entries: {ignoredPubs}
 * number of authors: {nrAuthors}
 
-## Network analysis
+## Paper network analysis
 
 The paper network is built by connecting papers that share
 authors. If *paper A* shares an author with *paper B* and
@@ -40,9 +41,13 @@ authors. If *paper A* shares an author with *paper B* and
 in a connected component. **These components might show
 communities of researchers.**
 
-* The largest connected component has {maxCCsize} ({maxCCsizePerTotal:.0%}) papers:
+* The largest connected component has {maxCCsize} papers which is {maxCCsizePerTotal:.0%} of all papers. They are:
 
     {maxCC}
+
+* It is written by:
+
+    {authorsOfMaxCC}
 
 * the second largest group contains {secondCCsize} ({secondCCsizePerTotal:.0%}) papers.
 * {numberUnconnectedPapers} papers ({unconnectedPapersPerTotal:.0%}) of your research don't share authors with any other paper.
@@ -56,8 +61,8 @@ communities of researchers.**
                                nrAuthors = self.nrAuthors,
                                maxCCsize = self.maxCCsize,
                                maxCCsizePerTotal = self.maxCCsizePerTotal,
-                               maxCCelement = self.maxCCelement,
                                maxCC = self.maxCC,
+                               authorsOfMaxCC = self.authorsOfMaxCC,
                                secondCCsize = self.secondCCsize,
                                secondCCsizePerTotal = self.secondCCsizePerTotal,
                                numberUnconnectedPapers = self.numberUnconnectedPapers,

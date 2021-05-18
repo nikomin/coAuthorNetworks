@@ -213,7 +213,7 @@ def writeGraphReport( biblio ):
             largestComp = i
             largestCompSize = len(largestComp)
     ccSizes.sort()
-
+    
     drawHistogram( biblio.filenameBase, biblio.paperList, largestComp )
     print( "Saving report to %s" %(biblio.filenameBase + extensionDefault_report) )
     
@@ -223,7 +223,18 @@ def writeGraphReport( biblio ):
     report.ignoredPubs = biblio.ignoredEntriesCount
     report.nrAuthors = len(biblio.authorNetwork.keys())
 
-    report.maxCC = ""
+    authorsOfLargestComp = [] 
+    for paper in largestComp: 
+        for author in biblio.paperList[paper]['authorIDs']: 
+            authorsOfLargestComp.append(author) 
+    authorsOfLargestComp.sort()
+    authorsOfLargestComp = list(dict.fromkeys(authorsOfLargestComp))
+    for author in authorsOfLargestComp:
+        nrPapers = biblio.authorList[author]['papercount']
+        if nrPapers > 1:
+            author = '**'+author+"**"
+        report.authorsOfMaxCC = report.authorsOfMaxCC + author + " (" + str(nrPapers) + "), "
+
     for paper in largestComp:
         report.maxCC = report.maxCC+paper+", "
     
