@@ -41,11 +41,12 @@ authors. If *paper A* shares an author with *paper B* and
 in a connected component. **These components might show
 communities of researchers.**
 
-* The largest connected component has {maxCCsize} papers which is {maxCCsizePerTotal:.0%} of all papers. They are:
+* The largest connected component has {maxCCsize} papers which is {maxCCsizePerTotal:.0%} of all papers. 
+    - the papers are:
 
     {maxCC}
 
-* It is written by:
+    - the authors are:
 
     {authorsOfMaxCC}
 
